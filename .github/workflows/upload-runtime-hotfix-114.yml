@@ -1,0 +1,31 @@
+name: Upload Russia Online runtime hotfix 1.1.14
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/upload-runtime-hotfix-114.yml
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download encrypted transfer
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 4 --retry-all-errors             --output runtime-hotfix-114-transfer.zip             "https://rednode.pro/wp-content/uploads/2026/10/runtime-hotfix-114-transfer.zip"
+          unzip -j runtime-hotfix-114-transfer.zip runtime-hotfix-114.rnpkg
+          echo "4ae0ef139dc4eb9be67e95952969c951b07106c5971a6dd9c4b734f0fb02cf03  runtime-hotfix-114.rnpkg" | sha256sum --check --strict
+
+      - name: Upload release asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload assets-v12 runtime-hotfix-114.rnpkg             --repo "$GITHUB_REPOSITORY"             --clobber
